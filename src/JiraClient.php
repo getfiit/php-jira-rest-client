@@ -194,8 +194,14 @@ class JiraClient
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         }
 
-        curl_setopt($ch, CURLOPT_HTTPHEADER,
-            ['Accept: */*', 'Content-Type: application/json']);
+        $headr = array();
+
+        $headr[] = 'Accept: */*';
+        $headr[] = 'Content-Type: application/json';
+        if (isset($_ENV["JIRA_TOKEN"])) {
+            $headr[] = 'Authorization: Bearer '.$_ENV["JIRA_TOKEN"];
+        }
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headr);
 
         curl_setopt($ch, CURLOPT_VERBOSE, $this->getConfiguration()->isCurlOptVerbose());
 
@@ -424,9 +430,14 @@ class JiraClient
      */
     protected function authorization($ch)
     {
-        $username = $this->getConfiguration()->getJiraUser();
-        $password = $this->getConfiguration()->getJiraPassword();
-        curl_setopt($ch, CURLOPT_USERPWD, "$username:$password");
+        if (isset($_ENV["JIRA_TOKEN"])) {
+            // SKIP
+        }
+        else {
+            $username = $this->getConfiguration()->getJiraUser();
+            $password = $this->getConfiguration()->getJiraPassword();
+            curl_setopt($ch, CURLOPT_USERPWD, "$username:$password");
+        }
     }
 
     /**
